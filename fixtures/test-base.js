@@ -4,6 +4,7 @@ const { HomePage } = require('../pages/HomePage');
 const { SearchResultsPage } = require('../pages/SearchResultsPage');
 const { ProductPage } = require('../pages/ProductPage');
 const { CartPage } = require('../pages/CartPage');
+const { ComparePage } = require('../pages/ComparePage');
 const { products } = require('../data/products');
 const { customMatchers } = require('../utils/assertions');
 
@@ -15,6 +16,7 @@ const test = base.test.extend({
   searchResults: async ({ page }, use) => use(new SearchResultsPage(page)),
   productPage: async ({ page }, use) => use(new ProductPage(page)),
   cartPage: async ({ page }, use) => use(new CartPage(page)),
+  comparePage: async ({ page }, use) => use(new ComparePage(page)),
 
   // Test data
   products: async ({}, use) => use(products),
