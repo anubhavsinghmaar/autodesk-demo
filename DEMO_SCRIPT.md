@@ -1,95 +1,129 @@
-# Autodesk demo script (Thursday, 10 to 11 PM IST)
+# Autodesk technical demo (Thursday, 10 to 11 PM IST)
 
-**Goal:** show that Kane CLI plus a coding agent can author new tests that **reuse and extend an existing Playwright framework**, and earn a POC.
+**Who:** Sudarsan Rao (Consulting Software Developer), Michael (Senior Software Engineer), Anjali (Principal Engineer), possibly the two core engineers who missed the July call. From us: Anubhav (leads), Misbah (account), Shantanu (if joining).
 
-**Setup, 30 minutes before the call**
-- VS Code open on `~/Desktop/autodesk-demo`, with the Claude Code panel open and the terminal panel open.
-- `kane-cli whoami` shows you signed in.
-- Browser tabs: the Flow A evidence report, the Flow A exported JS file, this script.
-- Notifications off. Terminal font large.
-- Backup video ready to share if anything breaks.
+**Why this call exists (from the 10 July meeting):**
+- Autodesk has its own execution, dashboards, debugging and test repos, and a large Playwright framework reused across teams. They will not replace it.
+- They want help **authoring** new tests that **reuse and extend** that framework. Cursor and Claude generate tests but ignore the framework.
+- The July ask for this follow-up: **show Kane CLI handling a complex existing Playwright framework, not simple URL flows.**
+- Sudarsan: if framework integration is shown, they'd consider a POC or joint MVP on one Autodesk application.
+- Relationship: Autodesk is also mid-POC with LambdaTest cloud for the Construction Cloud team.
+
+## Before the call: confirm with Shantanu and Misbah (must do)
+
+1. **"Test suite context" and "application code context."** In July we said these would ship in July. They are not in Kane CLI 0.8.22 docs or `--help`. Agree what we say: shipped, behind a flag, or on the roadmap. **Do not improvise this answer.**
+2. **"Auto-heal works on externally executed tests."** Confirm whether healing applies to exported code running in their own Playwright runner, or only to Kane CLI runs.
+3. **"177,000 to 2,000 tokens versus Claude alone."** Confirm the source before repeating it.
+4. **POC owner:** Misbah or the SE owns follow-ups and the POC from day one.
+
+## Setup (30 minutes before)
+
+- VS Code on `~/Desktop/autodesk-demo`, branch `main`. Claude Code panel and terminal panel open. Font large, notifications off.
+- Tabs ready: Flow A `test.js` export, `tests/cart/add-to-cart.spec.js`, `fixtures/test-base.js`, this script.
+- Browser: Flow A Test Manager link.
+- `kane-cli whoami` shows signed in. Do not upgrade Kane CLI before the call.
 
 ## Agenda (60 minutes)
 
 | Time | Section |
 |---|---|
-| 0 to 5 | Recap their ask |
-| 5 to 15 | Flow A: Kane CLI on its own |
-| 15 to 35 | Flow B: Kane CLI inside Claude Code, extending the framework |
-| 35 to 40 | What's built in today, and the POC proposal |
+| 0 to 5 | Recap their ask in their words |
+| 5 to 12 | Tour their kind of framework (ours) |
+| 12 to 20 | Flow A: Kane CLI on its own |
+| 20 to 35 | Flow B: Kane CLI with Claude Code extends the framework |
+| 35 to 40 | What is built in today, and the POC proposal |
 | 40 to 60 | Discovery questions and next steps |
 
-## 1. Recap (5 minutes)
+## 1. Recap (5 min)
 
-> "In July you told us you have a large, shared Playwright framework and your own execution, dashboards and repo management, and you don't want to replace any of it. You want help **authoring** new tests, and the tools you've tried write tests that ignore your framework. Today I'll show a workflow where new tests reuse your page objects and patterns, and every test is proven in a real browser before it's written."
+> "In July you said your framework is large, shared across teams and built for reuse, and that the tools you've tried write tests that ignore it. Your engineers asked to see Kane CLI work with a complex framework, not simple URL flows. So today everything happens inside a team-style Playwright framework, and every new test has to pass your kind of code review."
 
-## 2. Flow A: Kane CLI on its own (10 minutes)
+## 2. Framework tour (7 min)
 
-**Command** (run beforehand; re-run live if time allows, about a minute):
+Show the folders: `config/` (environments), `data/` (test data), `components/` (shared UI), `pages/` (page objects on `BasePage`), `utils/assertions.js` (custom `toBePrice` matcher), `fixtures/test-base.js` (page objects, data, journey fixture `cartWithIphone`), `tests/catalogue` and `tests/cart`, `CONVENTIONS.md`.
+
+Run:
+
+```bash
+npm test
+```
+
+**7 passed.**
+
+> "This is a smaller version of what you described: layered, conventions enforced in review. The question is whether new tests reuse this or ignore it."
+
+## 3. Flow A: Kane CLI on its own (8 min)
+
+Already run. Show the saved terminal output, the Test Manager link, and the export:
+`.testmuai/tests/output-2026-10-13T12-30-17/playwright-javascript-code/test.js`
+
+Optional live re-run (about a minute):
 
 ```bash
 kane-cli run "Search for iPhone, open the iPhone product, add it to the cart, then open the cart and verify it contains iPhone" --url https://ecommerce-playground.lambdatest.io --code-language javascript
 ```
 
-**Show:**
-1. The objective in plain English, with no locators written.
-2. The real browser run and the pass verdict.
-3. The evidence: screenshots per step and the report.
-4. The exported **Playwright JavaScript** file.
+Put `test.js` next to `tests/cart/add-to-cart.spec.js`.
 
-**Say:**
-> "This is the core: plain English in, a real browser run, a verified verdict with evidence, and Playwright code out. But this exported code is generic. It doesn't know your framework. That's what the next part fixes."
+> "Plain English in, a real browser run, a verified verdict with evidence, Playwright code out. But this export is generic: raw locators, no page objects. On its own it would fail your review. That's the gap you described."
 
-## 3. Flow B: extend the framework with Claude Code (20 minutes)
+## 4. Flow B: extend the framework (15 min)
 
-**First, show the framework (2 minutes):** `pages/`, `fixtures/test-base.js`, `CONVENTIONS.md`, and one existing test. Then run `npx playwright test` to show 3 tests passing.
+**Show the result from the rehearsal run, do not run it live** (the full run takes several minutes):
 
-> "Think of this as your framework: shared page objects, a team fixture, conventions reviewers enforce."
+```bash
+git checkout demo-solution
+```
 
-**Prompt in Claude Code:**
+Walk through:
+1. `pages/ProductPage.js`: one new method, `addToCompare()`, reusing the shared `Toast`.
+2. `pages/ComparePage.js`: a new page object extending `BasePage`, only for what didn't exist.
+3. `fixtures/test-base.js`: `comparePage` registered.
+4. `tests/compare/compare.spec.js`: reuses `homePage`, `searchResults`, `productPage`, `cartPage` and `products` data, tagged `@compare @regression`, no raw locators.
+5. The raw Kane CLI export next to the final test: same verified steps, rewritten into the framework.
 
-> Add a new test for comparing products. The journey: compare iPhone and HTC Touch HD, check both appear on the Product Comparison page, then add iPhone to the cart from there and verify the cart contains it.
-> First, read CONVENTIONS.md, pages/ and fixtures/test-base.js. Then use kane-cli to run this journey in a real browser and export the code as JavaScript. Finally, write the test in our framework style: reuse HomePage, ProductPage and CartPage, add a ComparePage only for what is new, register it in the fixture, and put the spec in tests/compare.spec.js. Run npx playwright test at the end.
+Run:
 
-**Show, in order:**
-1. Claude reading the page objects and conventions.
-2. The Kane CLI run: the flow proven in a real browser first.
-3. The **raw export** next to the **final test**: same journey, but the final test reuses `HomePage`, `ProductPage` and `CartPage` and adds a small `ComparePage`.
-4. The fixture updated with `comparePage`.
-5. `npx playwright test`: **4 passed**.
+```bash
+npm test
+```
 
-**Say:**
-> "Claude Code knows your code. Kane CLI knows your app in a real browser. Kane CLI proves the journey works; Claude fits it into your framework. Your execution, dashboards and CI don't change. The same flow works in Cursor."
+**8 passed.**
 
-If the live run stalls: switch to the backup video, or `git checkout demo-solution` to show the finished result.
+> "Claude Code read the framework and conventions. Kane CLI proved the journey in a real browser first, so the steps are grounded, not guessed. Claude then fitted it into the framework, reusing what existed and adding one page object. Your execution, dashboards and CI don't change, and the same flow works in Cursor."
 
-## 4. Honest positioning and the POC (5 minutes)
+Then `git checkout main`.
 
-> "To be clear: Kane CLI doesn't read your repository and generate code in your style by itself. The framework fit comes from the coding agent you already use, guided by your conventions. Kane CLI's job is to make sure every new test is grounded in a real, verified run, not guessed."
+## 5. What is built in today, and the POC (5 min)
 
-**POC proposal:** a 2-week POC on a sanitized slice of their framework. Success = for example, 5 new tests that reuse existing page objects, pass in their CI, and are accepted in their code review.
+Say what was agreed with Shantanu on point 1 above. Default if not yet shipped:
 
-## 5. Discovery questions
+> "Today the framework awareness comes from the coding agent you already use, guided by your conventions and project context. Kane CLI makes every new test grounded in a verified run. Native test-suite context in Kane CLI is [status agreed with Shantanu]."
 
-1. Is the framework TypeScript or JavaScript? How is it structured: page objects, fixtures, helpers, a custom runner?
-2. Roughly how large is it, and how many teams contribute?
-3. Could a POC use a sanitized copy or a slice of the repo?
-4. What would "integrates with our framework" mean for you: reusing page objects, matching code style, passing lint and review, running in your CI?
-5. Which coding agent does the team standardise on: Cursor, Claude Code, or both?
-6. Which application areas would you start with? Store, account management, product pages?
-7. Who else should be involved in a POC, and what's a realistic timeline?
+**POC proposal (as discussed with Bobby in July):** one Autodesk application, a sanitized slice of the real framework, about 2 weeks. Success: for example, 5 new tests that reuse existing page objects, pass their CI and are accepted in code review. Owner on our side: [Misbah / SE].
 
-## Likely questions, short answers
+## 6. Discovery questions
+
+1. TypeScript or JavaScript? Layers: page objects, components, fixtures, data, custom runner or reporter?
+2. How big is it, and how many teams contribute?
+3. Which application for the POC? Can we get a sanitized slice of the repo?
+4. What does "integrates with our framework" mean in review terms: reuse, style, lint, CI?
+5. Which coding agent does the team standardise on: Cursor, Claude Code, both?
+6. How do you handle test data and environments today?
+7. Who joins the POC, and on what timeline?
+
+## Likely questions
 
 | They ask | Answer |
 |---|---|
-| Does Kane CLI replace our runner or dashboards? | No. You run the final tests with your own Playwright setup and CI. |
-| TypeScript? | Kane CLI exports JavaScript; the coding agent converts it to TypeScript as part of fitting it into your framework. |
-| Where does our code go? | Your repository. Authoring runs use Kane CLI; your tests stay in your codebase. |
-| What does it cost? | Kane CLI uses credits per authoring run. Pricing details go to [Misbah / SE] as a follow-up. |
-| Mobile? | Kane CLI also runs native Android and iOS apps on emulators and simulators. Happy to show that separately. |
-| Self-healing? | Kane CLI tests can heal when the UI changes. For tests that live in your framework, healing is on the Kane CLI side, not inside the exported code. |
+| Did the test suite context feature ship? | The answer agreed with Shantanu. Never guess. |
+| Does it replace our runner or dashboards? | No. Final tests run in your own Playwright setup and CI. Kane CLI can run fully standalone and locally. |
+| TypeScript? | Kane CLI exports JavaScript; the coding agent converts to TypeScript while fitting it into your framework. |
+| Where does our code go? | Your repository. Authoring runs are local; tests live in your codebase. |
+| Self-healing on our own runs? | The answer agreed with Shantanu. |
+| Cost? | Kane CLI uses credits per authoring run. Pricing follows up through [Misbah]. |
+| Mobile? | Kane CLI also runs native Android and iOS apps on emulators and simulators. Happy to show separately. |
 
-## Follow-ups after the call
-- Send a recap with the agreed POC scope, owners and dates. **The POC owner is [Misbah / SE].**
-- Track every open question with an owner and a response date.
+## After the call
+
+Send a recap the same day: agreed POC scope, owners, dates, and every open question with an owner and a response date.

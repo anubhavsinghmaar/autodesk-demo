@@ -1,23 +1,32 @@
 # autodesk-demo
 
-A small Playwright (JavaScript) test framework used to demo **Kane CLI + Claude Code**: authoring new tests that reuse an existing framework instead of replacing it.
+A Playwright (JavaScript) team framework used to demo **Kane CLI + Claude Code**: authoring new tests that reuse and extend an existing framework instead of replacing it.
 
 ## Structure
 
-| Path | What it holds |
-|---|---|
-| `pages/` | Page objects: `BasePage`, `HomePage`, `ProductPage`, `CartPage` |
-| `fixtures/test-base.js` | Team fixture that injects page objects into every test |
-| `tests/` | Existing specs: search, add to cart, cart total |
-| `CONVENTIONS.md` | Rules every new test must follow |
-| `.testmuai/context.md` | Standing context Kane CLI reads on every run |
+```
+config/environments.js     TEST_ENV-driven baseURL and currency
+data/products.js           shared test data
+components/Toast.js        UI shared across pages
+pages/                     BasePage, HomePage, SearchResultsPage, ProductPage, CartPage
+utils/assertions.js        custom matchers (toBePrice)
+fixtures/test-base.js      page objects, test data, journey fixture (cartWithIphone)
+tests/catalogue/           search, pricing
+tests/cart/                add to cart, total, quantity, remove
+CONVENTIONS.md             rules every new test must follow
+.testmuai/context.md       standing context Kane CLI reads on every run
+DEMO_SCRIPT.md             the call script
+```
 
 ## Run
 
 ```bash
 npm install
 npx playwright install chromium
-npx playwright test
+npm test              # all 7 tests
+npm run test:smoke    # @smoke only
 ```
 
-The `demo-solution` branch contains the finished "compare products" test as a backup.
+## Branches
+- `main`: the framework before the demo (7 tests).
+- `demo-solution`: the finished "compare products" test in framework style (8 tests). Backup if the live run fails.

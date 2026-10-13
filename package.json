@@ -4,6 +4,8 @@
   "description": "",
   "scripts": {
     "test": "playwright test",
+    "test:smoke": "playwright test --grep @smoke",
+    "test:staging": "TEST_ENV=staging playwright test",
     "report": "playwright show-report"
   },
   "keywords": [],

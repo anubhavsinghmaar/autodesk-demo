@@ -5,19 +5,9 @@ class HomePage extends BasePage {
     await this.gotoRoute('common/home');
   }
 
-  /** Search the catalogue and land on the results page. */
+  /** Search the catalogue. Continue with SearchResultsPage. */
   async search(term) {
     await this.gotoRoute('product/search', { search: term });
-  }
-
-  results() {
-    return this.page.locator('.product-thumb .caption h4 a').filter({ visible: true });
-  }
-
-  /** Open a product from the results by its exact name. */
-  async openProduct(name) {
-    await this.results().getByText(name, { exact: true }).first().click();
-    await this.page.waitForURL(/product_id=/);
   }
 }
 
