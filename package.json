@@ -1,0 +1,16 @@
+{
+  "name": "autodesk-demo",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "test": "playwright test",
+    "report": "playwright show-report"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@playwright/test": "^1.62.1"
+  }
+}
