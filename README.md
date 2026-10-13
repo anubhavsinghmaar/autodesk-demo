@@ -13,7 +13,7 @@ A team-style Playwright (JavaScript) framework used to show one idea:
 flowchart LR
     A["You describe a new test<br/>in plain English"] --> B["Claude Code reads<br/>your framework<br/>(pages, fixtures, conventions)"]
     B --> C["Kane CLI runs the journey<br/>in a real browser<br/>and verifies it passes"]
-    C --> D["Kane CLI exports<br/>verified Playwright JS<br/>(generic, raw locators)"]
+    C --> D["Kane CLI exports<br/>verified Playwright JS<br/>(intent per step, standalone)"]
     D --> E["Claude Code rewrites it<br/>into your framework:<br/>reuses page objects,<br/>adds only what is new"]
     E --> F["npx playwright test<br/>runs in YOUR runner and CI<br/>(nothing replaced)"]
 
@@ -38,7 +38,7 @@ flowchart LR
 flowchart TD
     subgraph A["Flow A · Kane CLI on its own"]
         A1["Plain-English objective<br/>'search iPhone, add to cart, verify cart'"] --> A2["Real browser run + verdict + evidence"]
-        A2 --> A3["Exported test.js<br/>works, but generic:<br/>raw locators, no page objects"]
+        A2 --> A3["Exported test.js<br/>intent per step + auto-heal bindings,<br/>but standalone: no page objects"]
     end
 
     subgraph B["Flow B · Kane CLI + Claude Code"]
@@ -91,13 +91,24 @@ Full rules: [CONVENTIONS.md](CONVENTIONS.md).
 
 ## 4. Before and after (the point of the demo)
 
-**Kane CLI export (Flow A):** verified and runnable, but generic.
+**Kane CLI export (Flow A, real excerpt from `test.js`):** verified and runnable. Every step carries its plain-English intent, and the TestMu AI Playwright bindings add auto-heal (`autoHealVersion: "AH2"`). But it is standalone code, not written in your framework.
 
 ```js
-await page.goto('https://ecommerce-playground.lambdatest.io/');
-await page.locator('input[name="search"]').fill('iPhone');
-await page.locator('.product-thumb h4 a').first().click();
-// ...raw locators, no page objects, no team fixture
+import testmu from '@testmuai/playwright-bindings';
+
+testmu.configure({ name: "Add iPhone to Cart and Verify", autoHealVersion: "AH2" /* ... */ });
+
+testmu.test("Add iPhone to Cart and Verify", async (page) => {
+  await testmu.step("Typing iPhone into product search input", { instructionId: "..." }, async () => {
+    element_0 = page.locator('internal:role=textbox[name="Search For Products"i]');
+    await element_0.fill("iPhone");
+  });
+  await testmu.step("Clicking Add to Cart button for iPhone purchase", { instructionId: "..." }, async () => {
+    element_4 = page.locator('internal:role=button[name="Add to Cart"i]');
+    await element_4.click();
+  });
+  // ...no page objects, no team fixture, no shared test data
+});
 ```
 
 **After Claude Code fits it into the framework (Flow B):**

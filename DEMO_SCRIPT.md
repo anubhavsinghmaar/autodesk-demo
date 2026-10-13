@@ -12,7 +12,7 @@
 ## Before the call: confirm with Shantanu and Misbah (must do)
 
 1. **"Test suite context" and "application code context."** In July we said these would ship in July. They are not in Kane CLI 0.8.22 docs or `--help`. Agree what we say: shipped, behind a flag, or on the roadmap. **Do not improvise this answer.**
-2. **"Auto-heal works on externally executed tests."** Confirm whether healing applies to exported code running in their own Playwright runner, or only to Kane CLI runs.
+2. **"Auto-heal works on externally executed tests."** The export imports `@testmuai/playwright-bindings` with `autoHealVersion: "AH2"`, so healing appears to come through those bindings. Confirm: does it still heal once the test is rewritten into their page objects (without `testmu.step`), and does it need TestMu AI credentials at run time?
 3. **"177,000 to 2,000 tokens versus Claude alone."** Confirm the source before repeating it.
 4. **POC owner:** Misbah or the SE owns follow-ups and the POC from day one.
 
@@ -65,7 +65,7 @@ kane-cli run "Search for iPhone, open the iPhone product, add it to the cart, th
 
 Put `test.js` next to `tests/cart/add-to-cart.spec.js`.
 
-> "Plain English in, a real browser run, a verified verdict with evidence, Playwright code out. But this export is generic: raw locators, no page objects. On its own it would fail your review. That's the gap you described."
+> "Plain English in, a real browser run, a verified verdict with evidence, Playwright code out. Notice each step keeps its intent, like 'Clicking Add to Cart button for iPhone purchase', and the TestMu AI Playwright bindings carry auto-heal (`autoHealVersion: AH2`). But it's standalone code: no page objects, no team fixture. On its own it wouldn't pass your review. That's the gap you described."
 
 ## 4. Flow B: extend the framework (15 min)
 
